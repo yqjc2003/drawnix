@@ -24,9 +24,10 @@ import {
 import { LanguageSwitcherMenu } from './language-switcher-menu';
 import Menu from '../../menu/menu';
 import MenuSeparator from '../../menu/menu-separator';
+import MenuItem from '../../menu/menu-item';
 import { useI18n } from '../../../i18n';
 
-export const AppToolbar = () => {
+export const AppToolbar = ({ appMenuAction }: { appMenuAction?: { label: string; onSelect: () => void } }) => {
   const board = useBoard();
   const { t } = useI18n();
   const container = PlaitBoard.getBoardContainer(board);
@@ -65,6 +66,7 @@ export const AppToolbar = () => {
                 setAppMenuOpen(false);
               }}
             >
+              {appMenuAction && <><MenuItem onSelect={appMenuAction.onSelect}>{appMenuAction.label}</MenuItem><MenuSeparator /></>}
               <OpenFile></OpenFile>
               <SaveToFile></SaveToFile>
               <SaveAsFile></SaveAsFile>

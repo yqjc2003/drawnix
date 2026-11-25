@@ -70,6 +70,7 @@ export type DrawnixProps = {
   onLanguageChange?: (language: Language) => void;
   afterInit?: (board: PlaitBoard) => void;
   tutorial?: boolean;
+  appMenuAction?: { label: string; onSelect: () => void };
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export type { DrawnixToolState } from './hooks/use-drawnix';
@@ -101,6 +102,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   onLanguageChange,
   afterInit,
   tutorial = false,
+  appMenuAction,
 }) => {
   const options: PlaitBoardOptions = {
     readonly: false,
@@ -258,7 +260,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
             >
               {tutorial && board && <Tutorial />}
             </Board>
-            <AppToolbar></AppToolbar>
+            <AppToolbar appMenuAction={appMenuAction}></AppToolbar>
             <CreationToolbar></CreationToolbar>
             <ZoomToolbar></ZoomToolbar>
             <ThemeToolbar></ThemeToolbar>

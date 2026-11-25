@@ -28,7 +28,6 @@ NODE_VERSION = 20
 
 ## 项目已包含的配置文件
 
-- `apps/web/public/_redirects` - SPA 路由支持
 - `apps/web/public/_headers` - 基本缓存配置
 - `package.json` 中的 `build:web` 脚本
 

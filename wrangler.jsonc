@@ -1,0 +1,24 @@
+{
+  "name": "draw",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-25",
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist/apps/web",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://yqjc.cloudflareaccess.com",
+    "ACCESS_AUD": "95131b4ff3455d89a08a9f77366877821652de1c0cf5a037283f1362e0f2ee0f"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "drawnix",
+    "database_id": "ffe19fae-71cf-464a-9515-6f4d41950962"
+  }],
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  }
+}
