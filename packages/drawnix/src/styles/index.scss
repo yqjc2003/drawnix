@@ -77,6 +77,17 @@
             }
         }
     }
+    .app-menu-account {
+        padding: 8px 10px 4px;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-gray-90);
+        opacity: .65;
+        font-size: 12px;
+        user-select: text;
+    }
     .theme-toolbar {
         position: absolute;
         bottom: 36px;

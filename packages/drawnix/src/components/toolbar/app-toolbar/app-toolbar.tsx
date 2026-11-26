@@ -12,7 +12,7 @@ import {
 } from '@plait/core';
 import { Island } from '../../island';
 import { Popover, PopoverContent, PopoverTrigger } from '../../popover/popover';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   CleanBoard,
   OpenFile,
@@ -27,7 +27,11 @@ import MenuSeparator from '../../menu/menu-separator';
 import MenuItem from '../../menu/menu-item';
 import { useI18n } from '../../../i18n';
 
-export const AppToolbar = ({ appMenuAction }: { appMenuAction?: { label: string; onSelect: () => void } }) => {
+export const AppToolbar = ({ appMenuAction, appMenuAccount, appToolbarContent }: {
+  appMenuAction?: { label: string; onSelect: () => void };
+  appMenuAccount?: { email: string; onLogout: () => void; disabled?: boolean };
+  appToolbarContent?: ReactNode;
+}) => {
   const board = useBoard();
   const { t } = useI18n();
   const container = PlaitBoard.getBoardContainer(board);
@@ -66,7 +70,10 @@ export const AppToolbar = ({ appMenuAction }: { appMenuAction?: { label: string;
                 setAppMenuOpen(false);
               }}
             >
-              {appMenuAction && <><MenuItem onSelect={appMenuAction.onSelect}>{appMenuAction.label}</MenuItem><MenuSeparator /></>}
+              {appMenuAccount && <div className="app-menu-account" title={appMenuAccount.email}>{appMenuAccount.email}</div>}
+              {appMenuAction && <MenuItem onSelect={appMenuAction.onSelect}>{appMenuAction.label}</MenuItem>}
+              {appMenuAccount && <MenuItem onSelect={appMenuAccount.onLogout} disabled={appMenuAccount.disabled}>退出登录</MenuItem>}
+              {(appMenuAction || appMenuAccount) && <MenuSeparator />}
               <OpenFile></OpenFile>
               <SaveToFile></SaveToFile>
               <SaveAsFile></SaveAsFile>
@@ -78,6 +85,7 @@ export const AppToolbar = ({ appMenuAction }: { appMenuAction?: { label: string;
             </Menu>
           </PopoverContent>
         </Popover>
+        {appToolbarContent}
         <ToolButton
           key={1}
           type="icon"

@@ -32,6 +32,7 @@ export function App() {
   const [email, setEmail] = useState('');
   const [title, setTitle] = useState('');
   const [dirty, setDirty] = useState(false);
+  const allowUnload = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export function App() {
     }).catch(() => { /* No Access session: anonymous editing remains available. */ });
   }, []);
   useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); };
+    const warn = (event: BeforeUnloadEvent) => { if (dirty && !allowUnload.current) event.preventDefault(); };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
@@ -69,6 +70,12 @@ export function App() {
     finally { setBusy(false); }
   };
   const mayLeave = () => !dirty || window.confirm('当前画布有未保存的更改，确定离开吗？');
+  const logout = () => {
+    const warning = dirty ? '当前画布有未保存的更改，退出后这些更改将丢失。\n\n' : '';
+    if (!window.confirm(`${warning}退出将同时结束此 Cloudflare Access 账户在其他受保护应用中的会话。确定退出登录吗？`)) return;
+    allowUnload.current = true;
+    window.location.assign(`/cdn-cgi/access/logout?returnTo=${encodeURIComponent(window.location.origin + '/')}`);
+  };
   const open = (item: Board) => {
     setBoard(item); setTitle(item.title); valueRef.current = item.content; setValue(item.content); setDirty(false); setShowList(false);
   };
@@ -111,17 +118,10 @@ export function App() {
   });
 
   return <div className="cloud-app">
-    {email && <header className="cloud-bar">
-      {email && <button type="button" onClick={() => setShowList(!showList)} aria-expanded={showList}>☰ <span>我的画布</span></button>}
-      {board && <><input aria-label="画布名称" value={title} maxLength={120} disabled={busy} onChange={(e) => { setTitle(e.target.value); setDirty(true); }} />
-        <span className="cloud-status">{dirty ? '未保存' : '已保存'}</span>
-        <button type="button" disabled={busy || !dirty || !title.trim()} onClick={save}>保存</button></>}
-      <span className="cloud-user">{email}</span>
-    </header>}
     {error && <div className="cloud-error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭">×</button></div>}
     <main className="cloud-main">
       {showList && <aside className="cloud-list" aria-label="我的画布">
-        <div className="cloud-list-header"><h1>我的画布</h1><button disabled={busy} onClick={() => create()}>新建</button></div>
+        <div className="cloud-list-header"><h1>我的画布</h1><button disabled={busy} onClick={() => create()}>新建</button><button type="button" onClick={() => setShowList(false)} aria-label="关闭画布列表">×</button></div>
         <button disabled={busy} onClick={() => { if (mayLeave()) void openLocal(); }}>返回本地白板</button>
         {legacy && <div className="cloud-import"><p>检测到此浏览器中的旧画布。</p><button disabled={busy} onClick={() => create(legacy, '导入的本地画布')}>导入到云端</button></div>}
         {loading ? <p>正在加载画布…</p> : boards.length === 0 ? <p>还没有画布，点击“新建”开始。</p> : <ul>{boards.map((item) => <li key={item.id} className={board?.id === item.id ? 'active' : ''}>
@@ -138,6 +138,12 @@ export function App() {
           if (email) setShowList(true);
           else window.location.assign('/api/private/login');
         } }}
+        appMenuAccount={email ? { email, onLogout: logout, disabled: busy } : undefined}
+        appToolbarContent={board && <div className="cloud-board-controls">
+          <input aria-label="画布名称" title={title} value={title} maxLength={120} disabled={busy} onChange={(e) => { setTitle(e.target.value); setDirty(true); }} />
+          <span className="cloud-status" aria-live="polite">{dirty ? '未保存' : '已保存'}</span>
+          <button type="button" disabled={busy || !dirty || !title.trim()} onClick={save}>保存</button>
+        </div>}
         onChange={(next) => {
           const data = next as AppValue; valueRef.current = data; setValue(data);
           if (board) setDirty(true);

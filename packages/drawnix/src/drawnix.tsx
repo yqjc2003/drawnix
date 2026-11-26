@@ -71,6 +71,8 @@ export type DrawnixProps = {
   afterInit?: (board: PlaitBoard) => void;
   tutorial?: boolean;
   appMenuAction?: { label: string; onSelect: () => void };
+  appMenuAccount?: { email: string; onLogout: () => void; disabled?: boolean };
+  appToolbarContent?: React.ReactNode;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export type { DrawnixToolState } from './hooks/use-drawnix';
@@ -103,6 +105,8 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   afterInit,
   tutorial = false,
   appMenuAction,
+  appMenuAccount,
+  appToolbarContent,
 }) => {
   const options: PlaitBoardOptions = {
     readonly: false,
@@ -260,7 +264,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
             >
               {tutorial && board && <Tutorial />}
             </Board>
-            <AppToolbar appMenuAction={appMenuAction}></AppToolbar>
+            <AppToolbar appMenuAction={appMenuAction} appMenuAccount={appMenuAccount} appToolbarContent={appToolbarContent}></AppToolbar>
             <CreationToolbar></CreationToolbar>
             <ZoomToolbar></ZoomToolbar>
             <ThemeToolbar></ThemeToolbar>
