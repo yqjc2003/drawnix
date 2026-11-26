@@ -5,8 +5,7 @@ import localforage from 'localforage';
 import './cloud.scss';
 
 type AppValue = { children: PlaitElement[]; viewport?: Viewport; theme?: PlaitTheme };
-type Language = 'zh' | 'en' | 'ru' | 'ar' | 'vi';
-type Preference = { language: Language; copyTransparent: boolean; exportTransparent: boolean };
+type Preference = { copyTransparent: boolean; exportTransparent: boolean };
 type Board = { id: string; title: string; content: AppValue; version: number; updated_at: string };
 type BoardSummary = Omit<Board, 'content'>;
 const EMPTY: AppValue = { children: [] };
@@ -27,7 +26,7 @@ export function App() {
   const [value, setValue] = useState<AppValue>(EMPTY);
   const valueRef = useRef(value);
   const [toolState, setToolState] = useState<Partial<DrawnixToolState>>();
-  const [preference, setPreference] = useState<Preference>({ language: 'zh', copyTransparent: false, exportTransparent: false });
+  const [preference, setPreference] = useState<Preference>({ copyTransparent: false, exportTransparent: false });
   const [legacy, setLegacy] = useState<AppValue | null>(null);
   const [email, setEmail] = useState('');
   const [title, setTitle] = useState('');
@@ -37,6 +36,11 @@ export function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showList, setShowList] = useState(false);
+  const listDialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (showList) listDialogRef.current?.showModal();
+  }, [showList]);
 
   const refresh = async () => setBoards((await api<{ boards: BoardSummary[] }>('/api/private/boards')).boards);
   useEffect(() => {
@@ -95,7 +99,7 @@ export function App() {
     void run(async () => open(await api<Board>(`/api/private/boards/${id}`)));
   };
   const save = () => {
-    if (!board) return;
+    if (!board || busy || !dirty || !title.trim()) return;
     void run(async () => {
       const savedValue = valueRef.current;
       const result = await api<{ version: number }>(`/api/private/boards/${board.id}`, { method: 'PUT', body: JSON.stringify({ title, content: savedValue, version: board.version }) });
@@ -104,6 +108,17 @@ export function App() {
       await refresh();
     });
   };
+  useEffect(() => {
+    if (!board || showList) return;
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== 's') return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat) save();
+    };
+    window.addEventListener('keydown', handleSaveShortcut, true);
+    return () => window.removeEventListener('keydown', handleSaveShortcut, true);
+  }, [board, busy, dirty, title, showList]);
   const remove = (item: BoardSummary) => {
     if (!window.confirm(`确定删除“${item.title}”吗？此操作无法撤销。`)) return;
     if (board?.id === item.id && !mayLeave()) return;
@@ -118,31 +133,38 @@ export function App() {
   });
 
   return <div className="cloud-app">
-    {error && <div className="cloud-error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭">×</button></div>}
+    {error && !showList && <div className="cloud-error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭">×</button></div>}
     <main className="cloud-main">
-      {showList && <aside className="cloud-list" aria-label="我的画布">
-        <div className="cloud-list-header"><h1>我的画布</h1><button disabled={busy} onClick={() => create()}>新建</button><button type="button" onClick={() => setShowList(false)} aria-label="关闭画布列表">×</button></div>
+      {showList && <dialog ref={listDialogRef} className="cloud-list" aria-labelledby="cloud-list-title" onCancel={() => setShowList(false)} onClick={(event) => {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setShowList(false);
+      }}>
+        <div className="cloud-list-header"><h1 id="cloud-list-title">我的画布</h1><button disabled={busy} onClick={() => create()}>新建</button><button type="button" autoFocus onClick={() => setShowList(false)} aria-label="关闭画布列表">×</button></div>
+        {error && <div className="cloud-error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭">×</button></div>}
         <button disabled={busy} onClick={() => { if (mayLeave()) void openLocal(); }}>返回本地白板</button>
         {legacy && <div className="cloud-import"><p>检测到此浏览器中的旧画布。</p><button disabled={busy} onClick={() => create(legacy, '导入的本地画布')}>导入到云端</button></div>}
         {loading ? <p>正在加载画布…</p> : boards.length === 0 ? <p>还没有画布，点击“新建”开始。</p> : <ul>{boards.map((item) => <li key={item.id} className={board?.id === item.id ? 'active' : ''}>
           <button className="cloud-board" disabled={busy} onClick={() => load(item.id)}><strong>{item.title}</strong><small>{new Date(item.updated_at).toLocaleString()}</small></button>
           <button className="cloud-delete" disabled={busy} onClick={() => remove(item)} aria-label={`删除 ${item.title}`}>×</button>
         </li>)}</ul>}
-      </aside>}
+      </dialog>}
       <section className="cloud-editor">{!loading && <Drawnix key={board?.id ?? 'local'} value={value.children} viewport={value.viewport} theme={value.theme}
-        initialToolState={toolState} initialLanguage={preference.language}
+        initialToolState={toolState} initialLanguage="zh" showLanguageSwitcher={false} cloudSaveShortcut={!!board}
         initialPreference={{ copyTransparent: preference.copyTransparent, exportTransparent: preference.exportTransparent }}
-        onLanguageChange={(language) => updatePreference({ language })}
         onPreferenceChange={({ copyTransparent, exportTransparent }) => updatePreference({ copyTransparent, exportTransparent })}
-        appMenuAction={{ label: email ? '我的云端画布' : '登录 GitHub', onSelect: () => {
+        appMenuAction={{ label: email ? '我的云端画布' : '登录', onSelect: () => {
           if (email) setShowList(true);
           else window.location.assign('/api/private/login');
         } }}
         appMenuAccount={email ? { email, onLogout: logout, disabled: busy } : undefined}
         appToolbarContent={board && <div className="cloud-board-controls">
           <input aria-label="画布名称" title={title} value={title} maxLength={120} disabled={busy} onChange={(e) => { setTitle(e.target.value); setDirty(true); }} />
-          <span className="cloud-status" aria-live="polite">{dirty ? '未保存' : '已保存'}</span>
-          <button type="button" disabled={busy || !dirty || !title.trim()} onClick={save}>保存</button>
+          <button type="button" aria-label="保存画布" title={busy ? '正在保存' : dirty ? '保存画布 (Ctrl+S / ⌘S)' : '已保存'} disabled={busy || !dirty || !title.trim()} onClick={save}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 3.5h12l3.5 3.5v13.5H3.5V3.5H5Z" />
+              <path d="M7 3.5v6h9v-6M7 20.5v-7h10v7" />
+            </svg>
+          </button>
         </div>}
         onChange={(next) => {
           const data = next as AppValue; valueRef.current = data; setValue(data);

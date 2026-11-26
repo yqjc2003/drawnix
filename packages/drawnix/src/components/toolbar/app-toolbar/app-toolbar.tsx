@@ -27,10 +27,12 @@ import MenuSeparator from '../../menu/menu-separator';
 import MenuItem from '../../menu/menu-item';
 import { useI18n } from '../../../i18n';
 
-export const AppToolbar = ({ appMenuAction, appMenuAccount, appToolbarContent }: {
+export const AppToolbar = ({ appMenuAction, appMenuAccount, appToolbarContent, showLanguageSwitcher = true, cloudSaveShortcut = false }: {
   appMenuAction?: { label: string; onSelect: () => void };
   appMenuAccount?: { email: string; onLogout: () => void; disabled?: boolean };
   appToolbarContent?: ReactNode;
+  showLanguageSwitcher?: boolean;
+  cloudSaveShortcut?: boolean;
 }) => {
   const board = useBoard();
   const { t } = useI18n();
@@ -75,12 +77,12 @@ export const AppToolbar = ({ appMenuAction, appMenuAccount, appToolbarContent }:
               {appMenuAccount && <MenuItem onSelect={appMenuAccount.onLogout} disabled={appMenuAccount.disabled}>退出登录</MenuItem>}
               {(appMenuAction || appMenuAccount) && <MenuSeparator />}
               <OpenFile></OpenFile>
-              <SaveToFile></SaveToFile>
+              <SaveToFile hideShortcut={cloudSaveShortcut}></SaveToFile>
               <SaveAsFile></SaveAsFile>
               <SaveAsImage></SaveAsImage>
               <CleanBoard></CleanBoard>
               <MenuSeparator />
-              <LanguageSwitcherMenu />
+              {showLanguageSwitcher && <LanguageSwitcherMenu />}
               <Socials />
             </Menu>
           </PopoverContent>

@@ -14,7 +14,7 @@ import { MenuContentPropsContext } from '../../menu/common';
 import { EVENT } from '../../../constants';
 import { getShortcutKey } from '../../../utils/common';
 
-export const SaveToFile = () => {
+export const SaveToFile = ({ hideShortcut = false }: { hideShortcut?: boolean }) => {
   const board = useBoard();
   const { appState, setAppState } = useDrawnix();
   const { t } = useI18n();
@@ -34,7 +34,7 @@ export const SaveToFile = () => {
       }}
       icon={SaveFileIcon}
       aria-label={t('menu.saveFile')}
-      shortcut={getShortcutKey('CtrlOrCmd+S')}
+      shortcut={hideShortcut ? undefined : getShortcutKey('CtrlOrCmd+S')}
     >
       {t('menu.saveFile')}
     </MenuItem>

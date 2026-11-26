@@ -73,6 +73,8 @@ export type DrawnixProps = {
   appMenuAction?: { label: string; onSelect: () => void };
   appMenuAccount?: { email: string; onLogout: () => void; disabled?: boolean };
   appToolbarContent?: React.ReactNode;
+  showLanguageSwitcher?: boolean;
+  cloudSaveShortcut?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export type { DrawnixToolState } from './hooks/use-drawnix';
@@ -107,6 +109,8 @@ export const Drawnix: React.FC<DrawnixProps> = ({
   appMenuAction,
   appMenuAccount,
   appToolbarContent,
+  showLanguageSwitcher = true,
+  cloudSaveShortcut = false,
 }) => {
   const options: PlaitBoardOptions = {
     readonly: false,
@@ -264,7 +268,7 @@ export const Drawnix: React.FC<DrawnixProps> = ({
             >
               {tutorial && board && <Tutorial />}
             </Board>
-            <AppToolbar appMenuAction={appMenuAction} appMenuAccount={appMenuAccount} appToolbarContent={appToolbarContent}></AppToolbar>
+            <AppToolbar appMenuAction={appMenuAction} appMenuAccount={appMenuAccount} appToolbarContent={appToolbarContent} showLanguageSwitcher={showLanguageSwitcher} cloudSaveShortcut={cloudSaveShortcut}></AppToolbar>
             <CreationToolbar></CreationToolbar>
             <ZoomToolbar></ZoomToolbar>
             <ThemeToolbar></ThemeToolbar>

@@ -5,13 +5,15 @@
 .cloud-board-controls { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .cloud-board-controls input { width: clamp(65px, 10vw, 150px); min-width: 0; padding: 5px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--color-on-surface); font: inherit; font-size: 13px; text-overflow: ellipsis; }
 .cloud-board-controls input:hover, .cloud-board-controls input:focus { border-color: var(--color-primary); outline: none; }
-.cloud-board-controls button { border: 0; border-radius: 4px; padding: 5px; background: transparent; color: var(--color-on-surface); font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; }
+.cloud-board-controls button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 0; border-radius: 6px; padding: 0; background: var(--color-surface-primary-container); color: var(--color-primary); cursor: pointer; }
 .cloud-board-controls button:hover:not(:disabled) { background: var(--color-surface-primary-container); }
-.cloud-board-controls button:disabled { opacity: .45; cursor: default; }
-.cloud-status { font-size: 12px; color: var(--color-on-surface); opacity: .65; white-space: nowrap; }
+.cloud-board-controls button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.cloud-board-controls button:disabled { background: transparent; color: var(--color-on-surface); opacity: .4; cursor: default; }
 .cloud-error { flex: none; background: #fff1ed; padding: 10px 16px; color: #9d3325; display: flex; justify-content: space-between; }
 .cloud-main { display: flex; flex: 1; min-height: 0; position: relative; }
-.cloud-list { position: absolute; z-index: 10; top: 0; bottom: 0; left: 0; width: 270px; overflow: auto; border-right: 1px solid #e6e8ef; background: #fafbfc; padding: 16px; box-sizing: border-box; box-shadow: 5px 0 20px #0001; }
+.cloud-list { width: min(480px, calc(100% - 32px)); max-height: min(640px, calc(100% - 32px)); overflow: auto; border: 1px solid #e6e8ef; border-radius: 12px; background: #fff; color: #252b39; padding: 20px; box-sizing: border-box; box-shadow: 0 12px 40px #0003; font-family: inherit; }
+.cloud-list::backdrop { background: #0006; }
+.cloud-list .cloud-error { margin: 12px 0; border-radius: 6px; }
 .cloud-list-header { display: flex; align-items: center; gap: 8px; }
 .cloud-list-header h1 { flex: 1; }
 .cloud-list h1 { font-size: 18px; margin: 0; }
@@ -28,5 +30,5 @@
 .cloud-editor { flex: 1; min-width: 0; position: relative; overflow: hidden; }
 .cloud-empty { text-align: center; position: absolute; top: 40%; width: 100%; color: #687080; }
 .cloud-empty h2 { color: #252b39; font-size: 22px; }
-@media (max-width: 600px) { .cloud-board-controls input { width: 76px; } .cloud-status { display: none; } }
+@media (max-width: 600px) { .cloud-board-controls input { width: 76px; } }
 @media (max-width: 1100px) { .drawnix:not(.drawnix--mobile):has(.cloud-board-controls) .draw-toolbar { top: 90px; } }
